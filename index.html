@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Arabic">
+<meta name="theme-color" content="#0f0f0f">
+<title>Arabic — Gulf Trainer</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;--surface3:#2e2e2e;--border:rgba(255,255,255,0.08);--gold:#c9a84c;--gold-light:#e8c97a;--gold-dim:rgba(201,168,76,0.12);--text:#f0ede8;--text-muted:rgba(240,237,232,0.55);--text-dim:rgba(240,237,232,0.28);--green:#4caf82;--green-dim:rgba(76,175,130,0.12);--red:#e05a5a;--red-dim:rgba(224,90,90,0.12);--blue:#5b9cf6;--blue-dim:rgba(91,156,246,0.12);--radius:14px;--radius-sm:9px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);}
+#app{height:100dvh;display:flex;flex-direction:column;overflow:hidden;}
+.header{padding:50px 20px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.header-row{display:flex;align-items:flex-start;justify-content:space-between;}
+.header-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--gold);}
+.header-sub{font-size:11px;color:var(--text-muted);margin-top:2px;letter-spacing:0.04em;}
+.streak-badge{background:var(--gold-dim);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:6px 10px;text-align:center;}
+.streak-num{font-size:18px;font-weight:500;color:var(--gold);line-height:1;}
+.streak-lbl{font-size:9px;color:var(--text-muted);letter-spacing:0.06em;}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex:1;min-width:58px;padding:10px 4px;text-align:center;font-size:10px;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;letter-spacing:0.04em;white-space:nowrap;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.tab-icon{font-size:16px;margin-bottom:2px;}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:24px;}
+.section{display:none;padding:14px;}
+.section.active{display:block;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;}
+/* PROGRESS */
+.progress-overview{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.prog-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center;}
+.prog-num{font-size:28px;font-weight:500;color:var(--gold);}
+.prog-lbl{font-size:10px;color:var(--text-muted);margin-top:2px;letter-spacing:0.04em;text-transform:uppercase;}
+.prog-bar-wrap{height:4px;background:var(--surface2);border-radius:2px;margin:8px 0 0;overflow:hidden;}
+.prog-bar-fill{height:100%;background:var(--gold);border-radius:2px;transition:width 0.5s;}
+.achievement{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;}
+.ach-icon{font-size:22px;width:36px;text-align:center;flex-shrink:0;}
+.ach-title{font-size:13px;font-weight:500;color:var(--text);}
+.ach-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
+.ach-locked{opacity:0.35;}
+.ach-badge{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--gold-dim);color:var(--gold);margin-left:auto;flex-shrink:0;}
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+.history-item:last-child{border-bottom:none;}
+/* SCENARIOS */
+.scenario-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:background 0.15s;}
+.scenario-item:active{background:var(--surface2);}
+.sc-icon{width:42px;height:42px;border-radius:11px;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sc-info{flex:1;}
+.sc-title{font-size:14px;font-weight:500;}
+.sc-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.sc-done{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--green-dim);color:var(--green);margin-left:auto;flex-shrink:0;}
+/* CHAT */
+#chat-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:100;display:none;flex-direction:column;}
+.chat-header{padding:50px 16px 12px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.back-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.chat-title{font-size:14px;font-weight:500;}
+.chat-sub{font-size:11px;color:var(--text-muted);margin-top:1px;}
+.chat-messages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px;}
+.msg{margin-bottom:14px;}
+.msg-label{font-size:9px;color:var(--text-dim);margin-bottom:4px;letter-spacing:0.07em;display:flex;align-items:center;gap:6px;}
+.speak-btn{background:none;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;}
+.speak-btn svg{width:13px;height:13px;color:var(--gold);}
+.msg-bubble{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;max-width:94%;}
+.msg-bubble.you{background:var(--gold-dim);border-color:rgba(201,168,76,0.18);margin-left:auto;}
+.msg-bubble.teacher-bubble{background:var(--surface);border-color:rgba(201,168,76,0.13);}
+.msg-ar{font-size:22px;direction:rtl;line-height:1.5;margin-bottom:4px;}
+.msg-roman{font-size:12px;color:var(--gold);font-style:italic;}
+.msg-en{font-size:12px;color:var(--text-muted);margin-top:3px;}
+.msg-teacher-text{font-size:13px;color:var(--text);line-height:1.5;}
+.tip-pill{background:var(--gold-dim);border:1px solid rgba(201,168,76,0.18);border-radius:var(--radius-sm);padding:10px 14px;margin:0 14px 8px;font-size:12px;color:var(--gold-light);line-height:1.5;flex-shrink:0;}
+.suggestions{padding:6px 14px;display:flex;gap:8px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
+.suggestions::-webkit-scrollbar{display:none;}
+.sug-btn{flex-shrink:0;font-size:12px;padding:7px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);cursor:pointer;white-space:nowrap;}
+.sug-btn:active{background:var(--gold-dim);color:var(--gold);}
+.chat-input-area{padding:10px 14px 22px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;display:flex;gap:8px;align-items:center;}
+.chat-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:22px;padding:10px 16px;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;}
+.chat-input::placeholder{color:var(--text-dim);}
+.send-btn{width:40px;height:40px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.done-card{text-align:center;padding:20px;background:var(--green-dim);border:1px solid rgba(76,175,130,0.2);border-radius:var(--radius);margin-top:10px;}
+.done-title{font-size:15px;font-weight:500;color:var(--green);}
+.done-sub{font-size:12px;color:var(--text-muted);margin-top:4px;}
+/* PRONUNCIATION */
+.pron-section-label{font-size:10px;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;padding:14px 0 8px;}
+.pron-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;}
+.pron-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.pron-ar{font-size:28px;direction:rtl;color:var(--text);}
+.pron-name{font-size:14px;font-weight:500;color:var(--text);}
+.pron-sound{font-size:12px;color:var(--gold);font-style:italic;margin-top:2px;}
+.pron-tip{font-size:12px;color:var(--text-muted);line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.play-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.play-btn:active{background:var(--gold-dim);}
+.play-btn svg{width:14px;height:14px;color:var(--gold);}
+/* PHRASES */
+.phrase-group-label{font-size:10px;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;padding:14px 0 8px;}
+.phrase-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.phrase-ar{font-size:20px;direction:rtl;color:var(--text);margin-bottom:2px;}
+.phrase-roman{font-size:12px;color:var(--gold);font-style:italic;}
+.phrase-en{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.phrase-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
+.phrase-tag{font-size:9px;padding:3px 7px;border-radius:20px;}
+.tag-key{background:var(--gold-dim);color:var(--gold);}
+.tag-biz{background:var(--blue-dim);color:var(--blue);}
+.tag-social{background:rgba(167,130,255,0.1);color:#c0a6f7;}
+.phrase-play{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.phrase-play svg{width:11px;height:11px;color:var(--gold);}
+/* FLASHCARDS */
+.fc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.fc-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;text-align:center;}
+.fc-stat-n{font-size:22px;font-weight:500;color:var(--text);}
+.fc-stat-l{font-size:9px;color:var(--text-dim);letter-spacing:0.05em;text-transform:uppercase;}
+.fc-prog-bar{height:3px;background:var(--surface2);border-radius:2px;margin-bottom:14px;overflow:hidden;}
+.fc-prog-fill{height:100%;background:var(--gold);border-radius:2px;transition:width 0.3s;}
+.fc-main{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 20px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;margin-bottom:12px;transition:background 0.15s;-webkit-user-select:none;user-select:none;}
+.fc-main:active{background:var(--surface2);}
+.fc-hint{font-size:10px;color:var(--text-dim);letter-spacing:0.07em;margin-bottom:14px;text-transform:uppercase;}
+.fc-arabic{font-size:36px;direction:rtl;color:var(--text);line-height:1.3;}
+.fc-answer{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);width:100%;}
+.fc-en{font-size:18px;font-weight:500;color:var(--text);}
+.fc-roman{font-size:13px;color:var(--gold);font-style:italic;margin-top:3px;}
+.fc-btns{display:flex;gap:10px;}
+.fc-btn{flex:1;padding:13px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;}
+.fc-btn:active{opacity:0.7;}
+.fc-btn-got{background:var(--green-dim);color:var(--green);border:1px solid rgba(76,175,130,0.25);}
+.fc-btn-again{background:var(--red-dim);color:var(--red);border:1px solid rgba(224,90,90,0.25);}
+.fc-play-row{display:flex;justify-content:center;margin-top:10px;}
+.fc-play-btn{display:flex;align-items:center;gap:7px;padding:8px 18px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--gold);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.fc-play-btn svg{width:13px;height:13px;}
+.reset-btn{width:100%;margin-top:10px;padding:11px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+/* INSTALL */
+.install-card{background:var(--surface);border:1px solid rgba(91,156,246,0.25);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+.install-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
+.install-step:last-child{margin-bottom:0;}
+.install-num{width:26px;height:26px;border-radius:50%;background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--gold);flex-shrink:0;}
+.install-text{font-size:13px;color:var(--text-muted);line-height:1.5;padding-top:3px;}
+.install-text strong{color:var(--text);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-row">
+      <div>
+        <div class="header-title">Arabic</div>
+        <div class="header-sub">Gulf conversational trainer</div>
+      </div>
+      <div class="streak-badge">
+        <div class="streak-num" id="streak-num">0</div>
+        <div class="streak-lbl">DAY STREAK</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('speak')"><div class="tab-icon">💬</div>Speak</div>
+    <div class="tab" onclick="showTab('pronounce')"><div class="tab-icon">🔊</div>Sounds</div>
+    <div class="tab" onclick="showTab('phrases')"><div class="tab-icon">📋</div>Phrases</div>
+    <div class="tab" onclick="showTab('drill')"><div class="tab-icon">🃏</div>Drill</div>
+    <div class="tab" onclick="showTab('progress')"><div class="tab-icon">📊</div>Progress</div>
+    <div class="tab" onclick="showTab('install')"><div class="tab-icon">📱</div>Install</div>
+  </div>
+
+  <div class="content">
+
+    <!-- SPEAK -->
+    <div class="section active" id="tab-speak">
+      <div id="scenario-list">
+        <div style="font-size:10px;color:var(--text-dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:12px;">Choose a scenario</div>
+      </div>
+    </div>
+
+    <!-- PRONUNCIATION -->
+    <div class="section" id="tab-pronounce">
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:4px;">Tap the play button on any sound to hear it spoken. The tricky letters are highlighted.</div>
+      <div id="pron-list"></div>
+    </div>
+
+    <!-- PHRASES -->
+    <div class="section" id="tab-phrases">
+      <div id="phrase-list"></div>
+    </div>
+
+    <!-- DRILL -->
+    <div class="section" id="tab-drill">
+      <div class="fc-stats">
+        <div class="fc-stat"><div class="fc-stat-n" id="fc-c">0</div><div class="fc-stat-l">Correct</div></div>
+        <div class="fc-stat"><div class="fc-stat-n" id="fc-w">0</div><div class="fc-stat-l">Review</div></div>
+        <div class="fc-stat"><div class="fc-stat-n" id="fc-r">0</div><div class="fc-stat-l">Left</div></div>
+      </div>
+      <div class="fc-prog-bar"><div class="fc-prog-fill" id="fc-prog" style="width:0%"></div></div>
+      <div class="fc-main" id="fc-card" onclick="flipFC()">
+        <div class="fc-hint" id="fc-hint">Tap to reveal</div>
+        <div class="fc-arabic" id="fc-arabic"></div>
+        <div class="fc-answer" id="fc-answer" style="display:none;">
+          <div class="fc-en" id="fc-en"></div>
+          <div class="fc-roman" id="fc-roman"></div>
+        </div>
+      </div>
+      <div class="fc-play-row">
+        <button class="fc-play-btn" onclick="speakCurrent()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Hear pronunciation
+        </button>
+      </div>
+      <div class="fc-btns" id="fc-btns" style="display:none;margin-top:12px;">
+        <button class="fc-btn fc-btn-got" onclick="markFC(true)">✓ Got it</button>
+        <button class="fc-btn fc-btn-again" onclick="markFC(false)">↺ Again</button>
+      </div>
+      <button class="reset-btn" onclick="resetFC()">↺ Restart deck</button>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="section" id="tab-progress">
+      <div class="progress-overview">
+        <div class="prog-card">
+          <div class="prog-num" id="pg-scenes">0</div>
+          <div class="prog-lbl">Scenarios done</div>
+          <div class="prog-bar-wrap"><div class="prog-bar-fill" id="pg-scenes-bar" style="width:0%"></div></div>
+        </div>
+        <div class="prog-card">
+          <div class="prog-num" id="pg-cards">0</div>
+          <div class="prog-lbl">Cards correct</div>
+          <div class="prog-bar-wrap"><div class="prog-bar-fill" id="pg-cards-bar" style="width:0%"></div></div>
+        </div>
+        <div class="prog-card">
+          <div class="prog-num" id="pg-streak">0</div>
+          <div class="prog-lbl">Day streak</div>
+        </div>
+        <div class="prog-card">
+          <div class="prog-num" id="pg-sessions">0</div>
+          <div class="prog-lbl">Sessions</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">Achievements</div>
+      <div id="achievements-list"></div>
+      <div style="font-size:10px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin:14px 0 10px;">Recent activity</div>
+      <div class="card" id="history-list"></div>
+    </div>
+
+    <!-- INSTALL -->
+    <div class="section" id="tab-install">
+      <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--gold);margin-bottom:4px;">Add to your home screen</div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.5;margin-bottom:16px;">Follow these steps to install this as an app on your phone. It will work offline once installed.</div>
+
+      <div style="font-size:10px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">iPhone (Safari)</div>
+      <div class="install-card">
+        <div class="install-step">
+          <div class="install-num">1</div>
+          <div class="install-text">Open this file in <strong>Safari</strong> — it must be Safari, not Chrome.</div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">2</div>
+          <div class="install-text">Tap the <strong>Share button</strong> at the bottom of the screen (the square with an arrow pointing up).</div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">3</div>
+          <div class="install-text">Scroll down in the share sheet and tap <strong>"Add to Home Screen"</strong>.</div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">4</div>
+          <div class="install-text">Tap <strong>"Add"</strong> in the top right. Done — the app icon appears on your home screen.</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;margin:16px 0 10px;">Android (Chrome)</div>
+      <div class="install-card">
+        <div class="install-step">
+          <div class="install-num">1</div>
+          <div class="install-text">Open this file in <strong>Chrome</strong>.</div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">2</div>
+          <div class="install-text">Tap the <strong>three-dot menu</strong> in the top right corner.</div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">3</div>
+          <div class="install-text">Tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.</div>
+        </div>
+        <div class="install-step">
+          <div class="install-num">4</div>
+          <div class="install-text">Tap <strong>"Add"</strong> to confirm. The app icon appears on your home screen.</div>
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(201,168,76,0.2);background:var(--gold-dim);margin-top:4px;">
+        <div style="font-size:13px;color:var(--gold-light);line-height:1.6;">Once installed, the app opens full screen with no browser bar and works completely offline. Your progress is saved automatically on your device.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CHAT OVERLAY -->
+  <div id="chat-screen" style="display:none;">
+    <div class="chat-header">
+      <button class="back-btn" onclick="closeChat()">←</button>
+      <div>
+        <div class="chat-title" id="chat-title"></div>
+        <div class="chat-sub" id="chat-sub"></div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="tip-pill" id="tip-pill"></div>
+    <div class="suggestions" id="suggestions"></div>
+    <div class="chat-input-area">
+      <input class="chat-input" type="text" id="chat-input" placeholder="Type your reply..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="send-btn" onclick="sendMsg()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────
+const SCENARIOS = [
+  {id:'meet',icon:'🤝',title:'First meeting',sub:'Dubai office, new contact',
+   tip:'The greeting always comes before business. Never rush it.',
+   steps:[
+    {who:'Contact',ar:'السلام عليكم',roman:'As-salamu alaykum',en:'Peace be upon you.',
+     expect:/wa alaykum|salam|hello|hi|peace|ahlan/i,
+     resp:'Perfect. He replies warmly.',rAr:'وعليكم السلام، أهلاً وسهلاً',rRom:"Wa alaykum as-salam, ahlan wa sahlan",
+     next:{who:'Contact',ar:'شو اسمك؟',roman:"Shu ismak?",en:"What's your name?"}},
+    {who:'Contact',ar:'شو اسمك؟',roman:"Shu ismak?",en:"What's your name?",
+     expect:/sara|name|ismi|my name|i am|ana/i,
+     resp:'He greets you by name — warm start.',rAr:'أهلاً! متشرف بلقائك.',rRom:"Ahlan! Mutasharif biliqaak.",
+     next:{who:'Contact',ar:'من وين إنتِ؟',roman:"Min wayn inti?",en:"Where are you from?"}},
+    {who:'Contact',ar:'من وين إنتِ؟',roman:"Min wayn inti?",en:"Where are you from?",
+     expect:/scotland|uk|britain|england|london|glasgow|british/i,
+     resp:"MashaAllah — he's delighted.",rAr:'ماشاءالله! أهلاً بك في دبي.',rRom:"Masha'allah! Ahlan bik fi Dubai.",
+     next:{who:'Contact',ar:'شو شغلتك؟',roman:"Shu shughltak?",en:"What do you do for work?"}},
+    {who:'Contact',ar:'شو شغلتك؟',roman:"Shu shughltak?",en:"What do you do for work?",
+     expect:/franchise|business|brand|food|restaurant|owner|company/i,
+     resp:"He's interested. Scenario complete.",rAr:'فرصة ممتازة!',rRom:"Fursa mumtaza!",next:null}
+   ],
+   sug:[["Wa alaykum as-salam","Hello / salam"],["My name is Sara","Ismi Sara"],["I'm from Scotland","I'm from the UK"],["I run a food franchise brand","I work in franchising"]]
+  },
+  {id:'biz',icon:'💼',title:'Negotiation',sub:'Franchise or partnership deal',
+   tip:'"Inshallah" is not evasive — it is respectful. Use it naturally.',
+   steps:[
+    {who:'Partner',ar:'أهلاً، شكراً لحضورك.',roman:"Ahlan, shukran li-hudoorak.",en:"Hello, thank you for coming.",
+     expect:/thank|shukran|welcome|pleased|hello|meet|happy|glad/i,
+     resp:'He invites you to begin.',rAr:'يلا، نبدأ؟',rRom:"Yalla, nibda?",
+     next:{who:'Partner',ar:'هل عندك عرض؟',roman:"Hal indak ard?",en:"Do you have a proposal?"}},
+    {who:'Partner',ar:'هل عندك عرض؟',roman:"Hal indak ard?",en:"Do you have a proposal?",
+     expect:/yes|naam|proposal|franchise|brand|concept|present|bring|have/i,
+     resp:'He wants to hear more.',rAr:'ممتاز. ما هو المشروع؟',rRom:"Mumtaz. Ma huwal mashroo?",
+     next:{who:'Partner',ar:'ما هو المشروع؟',roman:"Ma huwal mashroo?",en:"What is the project?"}},
+    {who:'Partner',ar:'ما هو المشروع؟',roman:"Ma huwal mashroo?",en:"What is the project?",
+     expect:/food|restaurant|franchise|brand|smoke|pepper|concept|chain|uk|british/i,
+     resp:'He asks about investment — natural next question.',rAr:'مثير للاهتمام. كم الاستثمار؟',rRom:"Mutheer lil-ihtimam. Kam al-istithmar?",
+     next:{who:'Partner',ar:'إن شاء الله نتعاون.',roman:"Inshallah nataawan.",en:"God willing we will collaborate."}},
+    {who:'Partner',ar:'إن شاء الله نتعاون.',roman:"Inshallah nataawan.",en:"God willing, we will collaborate.",
+     expect:/.*/i,
+     resp:"A strong close. Full Gulf business conversation complete.",rAr:'يلا، إلى اللقاء.',rRom:"Yalla, ila al-liqa.",next:null}
+   ],
+   sug:[["Shukran, pleased to meet you","Thank you for having me"],["Yes, I have a proposal","Naam, indi ard"],["It is a food and beverage franchise","F&B franchise brand from the UK"],["The investment is around £150k","Inshallah we can discuss further"]]
+  },
+  {id:'investor',icon:'📈',title:'Investor meeting',sub:'Seeking Gulf investment',
+   tip:'Gulf investors value trust and relationship first. Numbers come after rapport is built.',
+   steps:[
+    {who:'Investor',ar:'أهلاً، سمعت عن مشروعك.',roman:"Ahlan, smit an mashrooik.",en:"Hello, I've heard about your project.",
+     expect:/thank|shukran|hello|yes|pleased|glad|welcome/i,
+     resp:"Good opener. He's curious about your concept.",rAr:'ممتاز. ما هو المفهوم؟',rRom:"Mumtaz. Ma huwal mafhoom?",
+     next:{who:'Investor',ar:'ما هو المفهوم؟',roman:"Ma huwal mafhoom?",en:"What is the concept?"}},
+    {who:'Investor',ar:'ما هو المفهوم؟',roman:"Ma huwal mafhoom?",en:"What is the concept?",
+     expect:/food|franchise|brand|restaurant|smoke|pepper|concept|british|uk/i,
+     resp:"He likes it. Asks about the market.",rAr:'السوق هنا جاهز لهذا.',rRom:"As-sooq huna jahiz li-hatha.",
+     next:{who:'Investor',ar:'هل عندك أرقام؟',roman:"Hal indak arqam?",en:"Do you have numbers / figures?"}},
+    {who:'Investor',ar:'هل عندك أرقام؟',roman:"Hal indak arqam?",en:"Do you have numbers?",
+     expect:/yes|naam|profit|revenue|ebitda|margin|numbers|figures|growth|data|return/i,
+     resp:"He nods — this is the right answer.",rAr:'ممتاز. نتحدث بالتفصيل.',rRom:"Mumtaz. Natahadath bit-tafaseel.",
+     next:{who:'Investor',ar:'إن شاء الله يكون ناجح.',roman:"Inshallah yakoon najeh.",en:"God willing it will be successful."}},
+    {who:'Investor',ar:'إن شاء الله يكون ناجح.',roman:"Inshallah yakoon najeh.",en:"God willing it will be successful.",
+     expect:/.*/i,
+     resp:"Strong close. Investor scenario complete.",rAr:'الله يوفّقك.',rRom:"Allah yiwaffiqik.",next:null}
+   ],
+   sug:[["Thank you, I'm excited to share it","Shukran — pleased to be here"],["It's a British food franchise brand","Smoke & Pepper — F&B franchise concept"],["Yes, we have strong EBITDA margins","Revenue growing 30% year on year"],["Inshallah — I'm confident in the concept"]]
+  },
+  {id:'franchise',icon:'🏪',title:'Franchise enquiry',sub:'Potential franchisee approaches you',
+   tip:'Gulf franchisees respect clear systems and strong brand identity. Lead with those.',
+   steps:[
+    {who:'Enquirer',ar:'سمعت أن عندك امتياز تجاري.',roman:"Smit an indak imtiyaz tijari.",en:"I heard you have a franchise.",
+     expect:/yes|naam|correct|right|indeed|franchise|brand|we do|hello/i,
+     resp:"Good. He asks what makes it different.",rAr:'ما الذي يميّزكم؟',rRom:"Madh alladhi yumayyizukum?",
+     next:{who:'Enquirer',ar:'ما الذي يميّزكم؟',roman:"Madh alladhi yumayyizukum?",en:"What makes you different?"}},
+    {who:'Enquirer',ar:'ما الذي يميّزكم؟',roman:"Madh alladhi yumayyizukum?",en:"What makes you different?",
+     expect:/brand|quality|system|support|training|british|food|unique|concept|customer/i,
+     resp:"He's interested. Asks about terms.",rAr:'ما هي شروط الامتياز؟',rRom:"Ma hiya shurut al-imtiyaz?",
+     next:{who:'Enquirer',ar:'ما هي شروط الامتياز؟',roman:"Ma hiya shurut al-imtiyaz?",en:"What are the franchise terms?"}},
+    {who:'Enquirer',ar:'ما هي شروط الامتياز؟',roman:"Ma hiya shurut al-imtiyaz?",en:"What are the franchise terms?",
+     expect:/fee|cost|investment|royalty|term|year|contract|agreement|support/i,
+     resp:"He nods — straightforward answers build trust.",rAr:'هل يمكننا الاجتماع للتفصيل؟',rRom:"Hal yumkinuna al-ijtimaa lit-tafaseel?",
+     next:{who:'Enquirer',ar:'هل يمكننا الاجتماع للتفصيل؟',roman:"Hal yumkinuna al-ijtimaa lit-tafaseel?",en:"Can we meet to discuss further?"}},
+    {who:'Enquirer',ar:'هل يمكننا الاجتماع للتفصيل؟',roman:"Hal yumkinuna al-ijtimaa lit-tafaseel?",en:"Can we meet in detail?",
+     expect:/.*/i,
+     resp:"Great outcome — a follow-up meeting secured. Scenario complete.",rAr:'ممتاز، إن شاء الله.',rRom:"Mumtaz, inshallah.",next:null}
+   ],
+   sug:[["Yes, Smoke & Pepper is a British F&B franchise","That's correct — we're expanding"],["Strong brand identity and full training support","British concept with proven systems"],["Initial fee and royalty on revenue","Details are in our franchise pack"],["Absolutely — I'll have my team arrange it"]]
+  },
+  {id:'hotel',icon:'🏨',title:'Hotel check-in',sub:'Dubai or Riyadh hotel',
+   tip:'A little Arabic at check-in sets a warm tone immediately.',
+   steps:[
+    {who:'Receptionist',ar:'أهلاً وسهلاً، كيف أقدر أساعدك؟',roman:"Ahlan wa sahlan, kayf agdar asaedak?",en:"Welcome! How can I help you?",
+     expect:/check|room|reservation|booking|book|yes|hello|hi|marhaba/i,
+     resp:"She pulls up your booking.",rAr:'تفضلي، اسمك من فضلك؟',rRom:"Tafaddali, ismik min fadlik?",
+     next:{who:'Receptionist',ar:'اسمك من فضلك؟',roman:"Ismik min fadlik?",en:"Your name please?"}},
+    {who:'Receptionist',ar:'اسمك من فضلك؟',roman:"Ismik min fadlik?",en:"Your name please?",
+     expect:/sara|name|ismi|i am/i,
+     resp:"Your room is ready.",rAr:'شكراً. غرفتك جاهزة، تفضلي.',rRom:"Shukran. Ghurfatak jahiza, tafaddali.",
+     next:{who:'Receptionist',ar:'تحتاجين شي ثاني؟',roman:"Tahtajeen shay thani?",en:"Do you need anything else?"}},
+    {who:'Receptionist',ar:'تحتاجين شي ثاني؟',roman:"Tahtajeen shay thani?",en:"Do you need anything else?",
+     expect:/.*/i,
+     resp:"Smooth check-in. Scenario complete.",rAr:'تفضلي، مع السلامة.',rRom:"Tafaddali, maas salama.",next:null}
+   ],
+   sug:[["I'd like to check in","I have a reservation"],["My name is Sara","Ismi Sara"],["No thank you — shukran","Could I get the wifi code?"]]
+  },
+  {id:'restaurant',icon:'🍽️',title:'Restaurant',sub:'Ordering in Dubai or Riyadh',
+   tip:'"Sahtain" means double health. Reply "Allah yisahhik" — locals love this.',
+   steps:[
+    {who:'Waiter',ar:'أهلاً، شو تحب تطلب؟',roman:"Ahlan, shu thibbin tutlub?",en:"Hello! What would you like?",
+     expect:/menu|water|food|order|coffee|tea|chicken|lamb|rice|fish|yes/i,
+     resp:"Right away. He asks what you'd like to drink.",rAr:'حاضر. شو تشربين؟',rRom:"Hadir. Shu tishrabeen?",
+     next:{who:'Waiter',ar:'شو تشربين؟',roman:"Shu tishrabeen?",en:"What would you like to drink?"}},
+    {who:'Waiter',ar:'شو تشربين؟',roman:"Shu tishrabeen?",en:"What to drink?",
+     expect:/water|moya|juice|coffee|tea|qahwa|pepsi|cola|drink/i,
+     resp:"Good. Food arrives — now the key exchange.",rAr:'تمام. صحتين!',rRom:"Tamam. Sahtain!",
+     next:{who:'Waiter',ar:'صحتين!',roman:"Sahtain!",en:"Double health! (reply with the traditional response)"}},
+    {who:'Waiter',ar:'صحتين!',roman:"Sahtain!",en:"Double health! Reply: Allah yisahhik",
+     expect:/allah|yisahhik|health|thank|shukran|same|you too/i,
+     resp:"Locals are always impressed by this reply. Scenario complete.",rAr:'الله يصحّك.',rRom:"Allah yisahhik.",next:null}
+   ],
+   sug:[["I'd like the menu please","Can I have some water?"],["I'll have the lamb and rice","Naam, and some water please"],["Allah yisahhik!","Thank you — shukran!"]]
+  },
+  {id:'smalltalk',icon:'☕',title:'Small talk',sub:'Gulf social conversation',
+   tip:"Small talk can last longer than you expect. Don't rush to the point.",
+   steps:[
+    {who:'Local',ar:'كيف حالك؟',roman:"Kayf halak?",en:"How are you?",
+     expect:/good|fine|great|well|hamdulillah|alhamdulillah|bikhair|tamam|ok/i,
+     resp:"'Alhamdulillah' is the most common reply — he uses it too.",rAr:'الحمد لله، وأنتِ؟',rRom:"Alhamdulillah, wa anti?",
+     next:{who:'Local',ar:'إيش أخبارك؟',roman:"Eish akhbarak?",en:"What's your news? (Gulf for 'how's things?')"}},
+    {who:'Local',ar:'إيش أخبارك؟',roman:"Eish akhbarak?",en:"What's your news?",
+     expect:/good|fine|great|well|busy|work|hamdulillah|alhamdulillah|tamam/i,
+     resp:"MashaAllah. He invites you along warmly.",rAr:'ماشاءالله، يلا بينا.',rRom:"Masha'allah, yalla bayna.",
+     next:{who:'Local',ar:'إنتِ مسافرة كتير؟',roman:"Inti musafira kteer?",en:"Do you travel a lot?"}},
+    {who:'Local',ar:'إنتِ مسافرة كتير؟',roman:"Inti musafira kteer?",en:"Do you travel a lot?",
+     expect:/yes|naam|travel|work|business|dubai|saudi|lot|often|frequent/i,
+     resp:"A warm blessing to close. Scenario complete.",rAr:'الله يوفّقك.',rRom:"Allah yiwaffiqik.",next:null}
+   ],
+   sug:[["Alhamdulillah, I'm well — and you?","Bikhair, shukran"],["Alhamdulillah, things are good","Tamam, shukran"],["Yes, I travel often for business","Yes, Dubai and Saudi mainly"]]
+  },
+];
+
+const PRONUNCIATION = [
+  {group:'Tricky letters — no English equivalent',items:[
+    {ar:'ع',name:"Ayn (ع)",sound:"' — a throat constriction",tip:"Tighten the back of your throat as if fogging a mirror. No English sound like it. This is one of the most important letters in Arabic.",tough:true},
+    {ar:'ح',name:"Ha (ح)",sound:"h — a breathy, whispered h",tip:"Like whispering 'h' from deep in your throat, not from your mouth. Think of breathing on cold glasses."},
+    {ar:'خ',name:"Kha (خ)",sound:"kh — like clearing your throat",tip:"Like the Scottish 'loch' or the German 'Bach'. A raspy, guttural sound from the back of the throat.",tough:true},
+    {ar:'غ',name:"Ghayn (غ)",sound:"gh — like a French r",tip:"A gentle gargling sound. Like the French 'r' in 'Paris'. Voiced version of kha (خ)."},
+    {ar:'ق',name:"Qaf (ق)",sound:"q — deep k sound",tip:"A 'k' produced from the very back of your throat. In Gulf Arabic, this is often said as a hard 'g' sound instead."},
+  ]},
+  {group:'Emphatic letters — heavier versions',items:[
+    {ar:'ص',name:"Sad (ص)",sound:"s — heavy s",tip:"Say 's' but drop your tongue low in your mouth and round your lips slightly. Much fuller than regular 's'."},
+    {ar:'ض',name:"Dad (ض)",sound:"d — heavy d",tip:"Called the 'letter of the Arabs' — unique to Arabic. A heavy 'd' with the tongue pressed against the upper teeth and sides."},
+    {ar:'ط',name:"Ta heavy (ط)",sound:"t — emphatic t",tip:"A 't' with the tongue pressed firmly against the upper teeth, lips slightly rounded. Fuller than regular 't'."},
+  ]},
+  {group:'Familiar but slightly different',items:[
+    {ar:'ر',name:"Ra (ر)",sound:"r — rolled r",tip:"A rolled 'r' like Spanish. Tap the tongue against the ridge behind your upper teeth quickly."},
+    {ar:'ث',name:"Tha (ث)",sound:"th — as in 'think'",tip:"Same as 'th' in 'think' or 'three'. Not 'the' — the unvoiced version."},
+    {ar:'ذ',name:"Dhal (ذ)",sound:"dh — as in 'the'",tip:"Same as 'th' in 'the' or 'that'. The voiced version."},
+  ]},
+  {group:'Gulf Arabic — key sounds in spoken dialect',items:[
+    {ar:'يلا',name:"Yalla",sound:"Ya-lla",tip:"Two syllables, stress on the second. The 'a' at the end is short. Probably the most heard word in Gulf Arabic."},
+    {ar:'إن شاء الله',name:"Inshallah",sound:"In-sha-AL-lah",tip:"Four syllables: In-sha-AL-lah. Stress on AL. Said constantly — every time someone refers to a future plan or hope."},
+    {ar:'ماشاءالله',name:"MashaAllah",sound:"Ma-sha-AL-lah",tip:"Four syllables. Stress on AL. Said to express admiration or praise. Never skip this in response to good news."},
+  ]},
+];
+
+const PHRASES = [
+  {group:'Greetings and courtesy',items:[
+    {ar:'السلام عليكم',roman:'As-salamu alaykum',en:'Peace be upon you',tag:'key'},
+    {ar:'وعليكم السلام',roman:"Wa alaykum as-salam",en:'And upon you peace (reply)',tag:'key'},
+    {ar:'أهلاً وسهلاً',roman:'Ahlan wa sahlan',en:'Welcome',tag:'social'},
+    {ar:'كيف حالك؟',roman:'Kayf halak?',en:'How are you?',tag:'social'},
+    {ar:'الحمد لله',roman:'Alhamdulillah',en:"Praise God / I'm well",tag:'key'},
+    {ar:'مع السلامة',roman:'Maas salama',en:'Go in safety (goodbye)',tag:'social'},
+    {ar:'إلى اللقاء',roman:'Ila al-liqa',en:'Until we meet again',tag:'biz'},
+    {ar:'صباح الخير',roman:'Sabah al-khayr',en:'Good morning',tag:'social'},
+    {ar:'مساء الخير',roman:"Masa al-khayr",en:'Good evening',tag:'social'},
+  ]},
+  {group:'Gulf essentials',items:[
+    {ar:'يلا',roman:'Yalla',en:"Let's go / come on / right then",tag:'key'},
+    {ar:'تمام',roman:'Tamam',en:'Okay / perfect / done',tag:'key'},
+    {ar:'إن شاء الله',roman:"Inshallah",en:'God willing',tag:'key'},
+    {ar:'ماشاءالله',roman:"Masha'allah",en:'How wonderful (admiration)',tag:'social'},
+    {ar:'يعطيك العافية',roman:"Yaatik al-afiya",en:'May God give you strength (well done)',tag:'social'},
+    {ar:'تفضل / تفضلي',roman:'Tafaddal / Tafaddali',en:'Go ahead / here you are',tag:'social'},
+    {ar:'شوية شوية',roman:'Shwayya shwayya',en:'Slowly slowly (please speak slower)',tag:'social'},
+    {ar:'صحتين',roman:'Sahtain',en:'Double health (said after eating)',tag:'social'},
+  ]},
+  {group:'Introducing yourself',items:[
+    {ar:'اسمي',roman:'Ismi...',en:'My name is...',tag:'social'},
+    {ar:'أنا من اسكتلندا',roman:'Ana min Iskutlanda',en:'I am from Scotland',tag:'social'},
+    {ar:'متشرفة بلقائك',roman:'Mutasharifa biliqaak',en:'Pleased to meet you (formal)',tag:'biz'},
+    {ar:'أنا أعمل في الامتياز التجاري',roman:'Ana amal fil-imtiyaz al-tijari',en:'I work in franchising',tag:'biz'},
+    {ar:'شركتي',roman:"Sharikati...",en:'My company is...',tag:'biz'},
+  ]},
+  {group:'Business',items:[
+    {ar:'هل يمكننا الاجتماع؟',roman:'Hal yumkinuna al-ijtimaa?',en:'Can we meet?',tag:'biz'},
+    {ar:'عندي عرض',roman:"Indi ard",en:'I have a proposal',tag:'biz'},
+    {ar:'فرصة ممتازة',roman:'Fursa mumtaza',en:'An excellent opportunity',tag:'biz'},
+    {ar:'عقد',roman:"Aqd",en:'Contract',tag:'biz'},
+    {ar:'نتعاون',roman:"Nataawan",en:'We collaborate / work together',tag:'biz'},
+    {ar:'ممتاز',roman:'Mumtaz',en:'Excellent',tag:'biz'},
+    {ar:'الاستثمار',roman:'Al-istithmar',en:'The investment',tag:'biz'},
+    {ar:'الامتياز التجاري',roman:'Al-imtiyaz al-tijari',en:'The franchise',tag:'biz'},
+    {ar:'شريك تجاري',roman:'Shareek tijari',en:'Business partner',tag:'biz'},
+  ]},
+  {group:'Getting by',items:[
+    {ar:'لا أفهم',roman:'La afham',en:"I don't understand",tag:'social'},
+    {ar:'ممكن تعيد؟',roman:'Mumkin tueed?',en:'Can you repeat that?',tag:'social'},
+    {ar:'شكراً جزيلاً',roman:'Shukran jazeelan',en:'Thank you very much',tag:'key'},
+    {ar:'من فضلك',roman:'Min fadlak',en:'Please',tag:'social'},
+    {ar:'كم الثمن؟',roman:'Kam al-thaman?',en:'How much does it cost?',tag:'social'},
+    {ar:'أريد',roman:"Ureed",en:'I want / I would like',tag:'social'},
+  ]},
+];
+
+const ALL_PHRASES = PHRASES.flatMap(g => g.items);
+
+// ── PROGRESS STORAGE ─────────────────────────────────────────────────────
+function loadProgress(){
+  try{return JSON.parse(localStorage.getItem('arabic_progress')||'{}');}catch(e){return{};}
+}
+function saveProgress(p){
+  try{localStorage.setItem('arabic_progress',JSON.stringify(p));}catch(e){}
+}
+function getProgress(){
+  const p=loadProgress();
+  if(!p.scenariosDone) p.scenariosDone=[];
+  if(!p.cardsCorrect) p.cardsCorrect=0;
+  if(!p.sessions) p.sessions=0;
+  if(!p.history) p.history=[];
+  if(!p.lastDate) p.lastDate='';
+  if(!p.streak) p.streak=0;
+  return p;
+}
+function updateStreak(){
+  const p=getProgress();
+  const today=new Date().toDateString();
+  if(p.lastDate===today) return p;
+  const yesterday=new Date(Date.now()-86400000).toDateString();
+  if(p.lastDate===yesterday) p.streak=(p.streak||0)+1;
+  else if(p.lastDate!==today) p.streak=1;
+  p.lastDate=today;
+  p.sessions=(p.sessions||0)+1;
+  saveProgress(p);
+  return p;
+}
+function markScenarioDone(id){
+  const p=getProgress();
+  if(!p.scenariosDone.includes(id)) p.scenariosDone.push(id);
+  const today=new Date().toLocaleString('en-GB',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'});
+  p.history.unshift({text:'Completed: '+SCENARIOS.find(s=>s.id===id).title,time:today});
+  if(p.history.length>20) p.history=p.history.slice(0,20);
+  saveProgress(p);
+  renderProgress();
+}
+function addCardCorrect(){
+  const p=getProgress();
+  p.cardsCorrect=(p.cardsCorrect||0)+1;
+  saveProgress(p);
+  renderProgress();
+}
+
+// ── TTS ───────────────────────────────────────────────────────────────────
+function speak(text){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='ar-SA';
+  u.rate=0.82;
+  u.pitch=1;
+  const voices=window.speechSynthesis.getVoices();
+  const arVoice=voices.find(v=>v.lang.startsWith('ar'));
+  if(arVoice) u.voice=arVoice;
+  window.speechSynthesis.speak(u);
+}
+if(window.speechSynthesis) window.speechSynthesis.getVoices();
+
+// ── TAB NAV ───────────────────────────────────────────────────────────────
+function showTab(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  const map=['speak','pronounce','phrases','drill','progress','install'];
+  const i=map.indexOf(id);
+  if(i>=0) document.querySelectorAll('.tab')[i].classList.add('active');
+  if(id==='drill'&&fcDeck.length===0) initFC();
+  if(id==='progress') renderProgress();
+}
+
+// ── SCENARIOS ─────────────────────────────────────────────────────────────
+function buildScenarios(){
+  const list=document.getElementById('scenario-list');
+  const p=getProgress();
+  SCENARIOS.forEach(s=>{
+    const div=document.createElement('div');
+    div.className='scenario-item';
+    const done=p.scenariosDone.includes(s.id);
+    div.innerHTML=`<div class="sc-icon">${s.icon}</div>
+      <div class="sc-info"><div class="sc-title">${s.title}</div><div class="sc-sub">${s.sub}</div></div>
+      ${done?'<div class="sc-done">✓ Done</div>':'<div style="color:var(--text-dim);font-size:18px;">›</div>'}`;
+    div.onclick=()=>openScenario(s.id);
+    list.appendChild(div);
+  });
+}
+
+let activeScenario=null,stepIdx=0;
+
+function openScenario(id){
+  activeScenario=SCENARIOS.find(s=>s.id===id);
+  stepIdx=0;
+  document.getElementById('chat-title').textContent=activeScenario.title;
+  document.getElementById('chat-sub').textContent=activeScenario.sub;
+  document.getElementById('chat-messages').innerHTML='';
+  document.getElementById('suggestions').innerHTML='';
+  document.getElementById('chat-input').value='';
+  document.getElementById('tip-pill').textContent='💡 '+activeScenario.tip;
+  document.getElementById('chat-screen').style.display='flex';
+  pushStep(activeScenario.steps[0]);
+  buildSugs(0);
+  setTimeout(()=>speak(activeScenario.steps[0].ar),600);
+}
+function closeChat(){document.getElementById('chat-screen').style.display='none';}
+
+function speakBtn(text){
+  return `<button class="speak-btn" onclick="speak('${text.replace(/'/g,"\\'")}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>`;
+}
+
+function pushStep(step){
+  const area=document.getElementById('chat-messages');
+  const d=document.createElement('div');
+  d.className='msg';
+  d.innerHTML=`<div class="msg-label">${step.who.toUpperCase()} ${speakBtn(step.ar)}</div>
+    <div class="msg-bubble">
+      <div class="msg-ar">${step.ar}</div>
+      <div class="msg-roman">${step.roman}</div>
+      <div class="msg-en">${step.en}</div>
+    </div>`;
+  area.appendChild(d);
+  area.scrollTop=area.scrollHeight;
+}
+
+function pushTeacher(text,ar,roman){
+  const area=document.getElementById('chat-messages');
+  const d=document.createElement('div');
+  d.className='msg';
+  let inner=`<div class="msg-label">TEACHER ${ar?speakBtn(ar):''}</div><div class="msg-bubble teacher-bubble">`;
+  if(ar) inner+=`<div class="msg-ar">${ar}</div><div class="msg-roman">${roman}</div>`;
+  inner+=`<div class="msg-teacher-text">${text}</div></div>`;
+  d.innerHTML=inner;
+  area.appendChild(d);
+  area.scrollTop=area.scrollHeight;
+  if(ar) setTimeout(()=>speak(ar),300);
+}
+
+function pushYou(text){
+  const area=document.getElementById('chat-messages');
+  const d=document.createElement('div');
+  d.className='msg';
+  d.innerHTML=`<div class="msg-label" style="text-align:right">YOU</div><div style="text-align:right"><div class="msg-bubble you"><div class="msg-teacher-text">${text}</div></div></div>`;
+  area.appendChild(d);
+  area.scrollTop=area.scrollHeight;
+}
+
+function buildSugs(idx){
+  const bar=document.getElementById('suggestions');
+  bar.innerHTML='';
+  const s=activeScenario;
+  if(!s||!s.sug||!s.sug[idx]) return;
+  s.sug[idx].forEach(t=>{
+    const btn=document.createElement('button');
+    btn.className='sug-btn';
+    btn.textContent='→ '+t;
+    btn.onclick=()=>{document.getElementById('chat-input').value=t;sendMsg();};
+    bar.appendChild(btn);
+  });
+}
+
+function sendMsg(){
+  const input=document.getElementById('chat-input');
+  const val=input.value.trim();
+  if(!val||!activeScenario) return;
+  input.value='';
+  document.getElementById('suggestions').innerHTML='';
+  pushYou(val);
+  const step=activeScenario.steps[stepIdx];
+  setTimeout(()=>{
+    if(step.expect.test(val)){
+      pushTeacher(step.resp,step.rAr,step.rRom);
+      stepIdx++;
+      if(stepIdx<activeScenario.steps.length){
+        setTimeout(()=>{pushStep(activeScenario.steps[stepIdx]);buildSugs(stepIdx);setTimeout(()=>speak(activeScenario.steps[stepIdx].ar),300);},700);
+      } else {
+        markScenarioDone(activeScenario.id);
+        setTimeout(()=>{
+          const area=document.getElementById('chat-messages');
+          const d=document.createElement('div');
+          d.innerHTML=`<div class="done-card"><div class="done-title">✓ Scenario complete</div><div class="done-sub">Choose another from the Speak tab</div></div>`;
+          area.appendChild(d);
+          area.scrollTop=area.scrollHeight;
+          document.getElementById('tip-pill').style.display='none';
+        },800);
+      }
+    } else {
+      pushTeacher("Good try. Keep it simple — even one word moves things forward. Use the suggestion buttons.",'','');
+      buildSugs(stepIdx);
+    }
+  },400);
+}
+
+// ── PRONUNCIATION ─────────────────────────────────────────────────────────
+function buildPronunciation(){
+  const list=document.getElementById('pron-list');
+  PRONUNCIATION.forEach(g=>{
+    const lbl=document.createElement('div');
+    lbl.className='pron-section-label';
+    lbl.textContent=g.group;
+    list.appendChild(lbl);
+    g.items.forEach(p=>{
+      const div=document.createElement('div');
+      div.className='pron-card';
+      div.innerHTML=`<div class="pron-row">
+        <div>
+          <div class="pron-ar">${p.ar}</div>
+          <div class="pron-name">${p.name}${p.tough?' <span style="font-size:10px;padding:2px 6px;border-radius:20px;background:var(--red-dim);color:var(--red);">tricky</span>':''}</div>
+          <div class="pron-sound">${p.sound}</div>
+        </div>
+        <button class="play-btn" onclick="speak('${p.ar.replace(/'/g,"\\'")}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+      </div>
+      <div class="pron-tip">${p.tip}</div>`;
+      list.appendChild(div);
+    });
+  });
+}
+
+// ── PHRASES ───────────────────────────────────────────────────────────────
+function buildPhrases(){
+  const list=document.getElementById('phrase-list');
+  PHRASES.forEach(g=>{
+    const lbl=document.createElement('div');
+    lbl.className='phrase-group-label';
+    lbl.textContent=g.group;
+    list.appendChild(lbl);
+    g.items.forEach(p=>{
+      const div=document.createElement('div');
+      div.className='phrase-row';
+      div.innerHTML=`<div><div class="phrase-ar">${p.ar}</div><div class="phrase-roman">${p.roman}</div><div class="phrase-en">${p.en}</div></div>
+        <div class="phrase-right">
+          <span class="phrase-tag tag-${p.tag}">${p.tag==='key'?'Essential':p.tag==='biz'?'Business':'Social'}</span>
+          <button class="phrase-play" onclick="speak('${p.ar.replace(/'/g,"\\'")}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+        </div>`;
+      list.appendChild(div);
+    });
+  });
+}
+
+// ── FLASHCARDS ────────────────────────────────────────────────────────────
+let fcDeck=[],fcIdx=0,fcFlipped=false,fcC=0,fcW=0;
+function initFC(){
+  fcDeck=[...ALL_PHRASES].sort(()=>Math.random()-0.5);
+  fcIdx=0;fcC=0;fcW=0;fcFlipped=false;
+  updateFC();
+}
+function updateFC(){
+  if(fcIdx>=fcDeck.length){
+    document.getElementById('fc-arabic').textContent='Done!';
+    document.getElementById('fc-hint').textContent=fcC+' correct · '+fcW+' to review';
+    document.getElementById('fc-answer').style.display='none';
+    document.getElementById('fc-btns').style.display='none';
+  } else {
+    const c=fcDeck[fcIdx];
+    document.getElementById('fc-arabic').textContent=c.ar;
+    document.getElementById('fc-en').textContent=c.en;
+    document.getElementById('fc-roman').textContent=c.roman;
+    document.getElementById('fc-answer').style.display='none';
+    document.getElementById('fc-btns').style.display='none';
+    document.getElementById('fc-hint').textContent='Tap to reveal';
+    fcFlipped=false;
+  }
+  document.getElementById('fc-c').textContent=fcC;
+  document.getElementById('fc-w').textContent=fcW;
+  document.getElementById('fc-r').textContent=Math.max(0,fcDeck.length-fcIdx);
+  const pct=fcDeck.length>0?Math.round((fcIdx/fcDeck.length)*100):0;
+  document.getElementById('fc-prog').style.width=pct+'%';
+}
+function flipFC(){
+  if(fcFlipped||fcIdx>=fcDeck.length) return;
+  fcFlipped=true;
+  document.getElementById('fc-answer').style.display='block';
+  document.getElementById('fc-btns').style.display='flex';
+  document.getElementById('fc-hint').textContent='Did you know it?';
+  speak(fcDeck[fcIdx].ar);
+}
+function markFC(correct){
+  if(correct){fcC++;addCardCorrect();}
+  else{fcW++;fcDeck.push(fcDeck[fcIdx]);}
+  fcIdx++;updateFC();
+}
+function resetFC(){initFC();}
+function speakCurrent(){if(fcIdx<fcDeck.length) speak(fcDeck[fcIdx].ar);}
+
+// ── PROGRESS RENDER ───────────────────────────────────────────────────────
+const ACHIEVEMENTS=[
+  {id:'first',icon:'🌟',title:'First words',sub:'Complete your first scenario',req:p=>p.scenariosDone.length>=1},
+  {id:'five',icon:'🔥',title:'On a roll',sub:'Complete 5 scenarios',req:p=>p.scenariosDone.length>=5},
+  {id:'all',icon:'🏆',title:'Full circuit',sub:'Complete all scenarios',req:p=>p.scenariosDone.length>=SCENARIOS.length},
+  {id:'cards10',icon:'🃏',title:'Card sharp',sub:'Get 10 flashcards correct',req:p=>p.cardsCorrect>=10},
+  {id:'cards50',icon:'🎓',title:'Vocabulary built',sub:'Get 50 flashcards correct',req:p=>p.cardsCorrect>=50},
+  {id:'streak3',icon:'📅',title:'3-day streak',sub:'Study 3 days in a row',req:p=>p.streak>=3},
+  {id:'streak7',icon:'💫',title:'Week of Arabic',sub:'Study 7 days in a row',req:p=>p.streak>=7},
+];
+function renderProgress(){
+  const p=getProgress();
+  const total=SCENARIOS.length;
+  const done=p.scenariosDone.length;
+  const cards=p.cardsCorrect||0;
+  document.getElementById('pg-scenes').textContent=done;
+  document.getElementById('pg-scenes-bar').style.width=Math.round((done/total)*100)+'%';
+  document.getElementById('pg-cards').textContent=cards;
+  document.getElementById('pg-cards-bar').style.width=Math.min(100,Math.round((cards/50)*100))+'%';
+  document.getElementById('pg-streak').textContent=p.streak||0;
+  document.getElementById('pg-sessions').textContent=p.sessions||0;
+  document.getElementById('streak-num').textContent=p.streak||0;
+  const achList=document.getElementById('achievements-list');
+  achList.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const unlocked=a.req(p);
+    const div=document.createElement('div');
+    div.className='achievement'+(unlocked?'':' ach-locked');
+    div.innerHTML=`<div class="ach-icon">${a.icon}</div>
+      <div><div class="ach-title">${a.title}</div><div class="ach-sub">${a.sub}</div></div>
+      ${unlocked?'<div class="ach-badge">Unlocked</div>':''}`;
+    achList.appendChild(div);
+  });
+  const hist=document.getElementById('history-list');
+  if(!p.history||p.history.length===0){
+    hist.innerHTML='<div style="font-size:13px;color:var(--text-muted);text-align:center;padding:10px;">No activity yet. Complete a scenario to start.</div>';
+  } else {
+    hist.innerHTML=p.history.slice(0,8).map(h=>`<div class="history-item"><div style="font-size:13px;color:var(--text);">${h.text}</div><div style="font-size:11px;color:var(--text-dim);">${h.time}</div></div>`).join('');
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+const prog=updateStreak();
+document.getElementById('streak-num').textContent=prog.streak||0;
+document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
+buildScenarios();
+buildPronunciation();
+buildPhrases();
+</script>
+<script>if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js');}</script>
+</body>
+</html>
